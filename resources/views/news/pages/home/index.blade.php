@@ -1,6 +1,5 @@
 @extends('news.main')
 @section('content')
-
     @include ('news.block.slider')
     <!-- Content Container -->
     <div class="content_container">
@@ -12,9 +11,9 @@
                     <div class="main_content">
                         <!-- Featured -->
                         @include('news.block.featured', ['items' => $itemsFeatured ] )
-                        
+
                         <!-- CATEGORY -->
-                        @include('news.pages.home.child-index.category') 
+                        @include('news.pages.home.child-index.category')
                     </div>
                 </div>
 

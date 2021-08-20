@@ -85,7 +85,7 @@ class CategoryController extends Controller
         $params["currentIsHome"]  = $request->is_home;
         $params["id"]             = $request->id;
         $this->model->saveItem($params, ['task' => 'change-is-home']);
-        $isHomeValue = $request->is_home == 'yes' ? 'no' : 'yes';
+        $isHomeValue = $request->is_home === 'yes' ? 'no' : 'yes';
         $link = route($this->controllerName . '/isHome', ['is_home' => $isHomeValue, 'id' => $request->id]);
         return response()->json([
             'isHomeObj' => config('zvn.template.is_home')[$isHomeValue],

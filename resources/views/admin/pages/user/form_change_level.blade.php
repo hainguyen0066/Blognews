@@ -29,8 +29,11 @@ $elements = [
     @include('admin.templates.x_title', ['title' => 'Quyền truy cập'])
     <div class="x_content">
         {{ Form::open([
-            'method'         => 'POST', 
-            'url'            => route("$controllerName/change-level"),
+            'method'         => 'POST',
+            'url'            => route("$controllerName/level",[
+                'level' => $user->level,
+                'id' => $user->id
+            ]),
             'accept-charset' => 'UTF-8',
             'enctype'        => 'multipart/form-data',
             'class'          => 'form-horizontal form-label-left',

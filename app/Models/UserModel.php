@@ -1,87 +1,71 @@
 <?php
 
 namespace App\Models;
+use DB;
 
-use App\Models\AdminModel;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use DB; 
 class UserModel extends AdminModel
 {
+    protected $primaryKey = 'id';
+    protected $guarded = [];
+
     public function __construct() {
-        $this->table               = 'user';
-        $this->folderUpload        = 'user' ; 
-        $this->fieldSearchAccepted = ['id', 'username', 'email', 'fullname']; 
+        $this->table               = 'users';
+        $this->folderUpload        = 'user' ;
+        $this->fieldSearchAccepted = ['id', 'username', 'email', 'fullname'];
         $this->crudNotAccepted     = ['_token','avatar_current', 'password_confirmation', 'task'];
     }
 
-    public function listItems($params = null, $options = null) {
-     
+    public function listItems($params = null, $options = null)
+    {
+
         $result = null;
-
-        if($options['task'] == "admin-list-items") {
-            $query = $this->select('id', 'username', 'email', 'fullname', 'avatar', 'status', 'level','created', 'created_by', 'modified', 'modified_by');
-               
-            if ($params['filter']['status'] !== "all")  {
-                $query->where('status', '=', $params['filter']['status'] );
+        if ($options['task'] == "admin-list-items") {
+            $allUsers = self::select('*');
+            if ($params['filter']['status'] !== "all") {
+                $allUsers->where('status', '=', $params['filter']['status']);
             }
 
-            if ($params['search']['value'] !== "")  {
-                if($params['search']['field'] == "all") {
-                    $query->where(function($query) use ($params){
-                        foreach($this->fieldSearchAccepted as $column){
-                            $query->orWhere($column, 'LIKE',  "%{$params['search']['value']}%" );
-                        }
-                    });
-                } else if(in_array($params['search']['field'], $this->fieldSearchAccepted)) { 
-                    $query->where($params['search']['field'], 'LIKE',  "%{$params['search']['value']}%" );
-                } 
+            if ($params['search']['value'] !== "") {
+                if ($params['search']['field'] == "all") {
+                    $allUsers->Search($this->fieldSearchAccepted, $params);
+                } else {
+                    if (in_array($params['search']['field'], $this->fieldSearchAccepted)) {
+                        $allUsers->Search($this->fieldSearchAccepted, $params, false);
+                    }
+                }
             }
 
-            $result =  $query->orderBy('id', 'desc')
-                            ->paginate($params['pagination']['totalItemsPerPage']);
+            $result = $allUsers->orderBy('id', 'desc')
+                ->paginate($params['pagination']['totalItemsPerPage']);
 
         }
-
-    
 
         return $result;
     }
 
     public function countItems($params = null, $options  = null) {
-     
+
         $result = null;
-
         if($options['task'] == 'admin-count-items-group-by-status') {
-         
-            $query = $this::groupBy('status')
-                        ->select( DB::raw('status , COUNT(id) as count') );
-
+            $query = $this::groupBy('status')->select( DB::raw('status , COUNT(id) as count') );
             if ($params['search']['value'] !== "")  {
                 if($params['search']['field'] == "all") {
-                    $query->where(function($query) use ($params){
-                        foreach($this->fieldSearchAccepted as $column){
-                            $query->orWhere($column, 'LIKE',  "%{$params['search']['value']}%" );
-                        }
-                    });
-                } else if(in_array($params['search']['field'], $this->fieldSearchAccepted)) { 
-                    $query->where($params['search']['field'], 'LIKE',  "%{$params['search']['value']}%" );
-                } 
+                    $query->Search($this->fieldSearchAccepted, $params);
+                } else if(in_array($params['search']['field'], $this->fieldSearchAccepted)) {
+                    $query->Search($this->fieldSearchAccepted, $params, false);
+                }
             }
-
             $result = $query->get()->toArray();
-           
-
         }
 
         return $result;
     }
 
-    public function getItem($params = null, $options = null) { 
+    public function getItem($params = null, $options = null) {
         $result = null;
-        
+
         if($options['task'] == 'get-item') {
-            $result = self::select('id', 'username', 'email', 'status', 'fullname', 'level', 'avatar')->where('id', $params['id'])->first();
+            $result = self::select('*')->where('id', $params['id'])->first();
         }
 
         if($options['task'] == 'get-avatar') {
@@ -100,7 +84,7 @@ class UserModel extends AdminModel
         return $result;
     }
 
-    public function saveItem($params = null, $options = null) { 
+    public function saveItem($params = null, $options = null) {
         if($options['task'] == 'change-status') {
             $status = ($params['currentStatus'] == "active") ? "inactive" : "active";
             self::where('id', $params['id'])->update(['status' => $status ]);
@@ -111,7 +95,7 @@ class UserModel extends AdminModel
             $params['created']    = date('Y-m-d');
             $params['avatar']      = $this->uploadThumb($params['avatar']);
             $params['password']    = md5($params['password']);
-            self::insert($this->prepareParams($params));        
+            self::insert($this->prepareParams($params));
         }
 
         if($options['task'] == 'edit-item') {
@@ -133,21 +117,32 @@ class UserModel extends AdminModel
             $level = $params['level'];
             self::where('id', $params['id'])->update(['level' => $level]);
         }
-        
+
         if($options['task'] == 'change-password') {
             $password       = md5($params['password']);
             self::where('id', $params['id'])->update(['password' => $password]);
         }
     }
 
-    public function deleteItem($params = null, $options = null) 
-    { 
+    public function deleteItem($params = null, $options = null)
+    {
         if($options['task'] == 'delete-item') {
-            $item   = self::getItem($params, ['task'=>'get-avatar']); // 
+            $item   = self::getItem($params, ['task'=>'get-avatar']); //
             $this->deleteThumb($item['avatar']);
             self::where('id', $params['id'])->delete();
         }
     }
 
+    public function scopeSearch($query, $field = null, $arr = null, $byAllColumn = true){
+        if ($byAllColumn) {
+            return $query->where(function($query) use ($field, $arr){
+                foreach($field as $column){
+                    $query->orWhere($column, 'LIKE',  "%{$arr['search']['value']}%" );
+                }
+            });
+        }else {
+            return $query->where($arr['search']['field'], 'LIKE',  "%{$arr['search']['value']}%" );
+        }
+    }
 }
 

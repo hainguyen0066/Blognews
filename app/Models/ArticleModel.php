@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use App\Models\AdminModel;
+use App\Models\TagModel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class ArticleModel extends AdminModel
 {
+
+    protected $guarded = [];
+
     public function __construct()
     {
         $this->table               = 'article as a';
@@ -17,7 +21,7 @@ class ArticleModel extends AdminModel
         $this->crudNotAccepted     = ['_token', 'thumb_current'];
     }
 
-    public function listItems($params = null, $options = null)
+    public function listItems($params = null, $options = null, $count = null)
     {
 
         $result = null;
@@ -57,12 +61,12 @@ class ArticleModel extends AdminModel
 
         if ($options['task'] == 'news-list-items-featured') {
 
-            $query = $this->select('a.id', 'a.name', 'a.content', 'a.created', 'a.category_id', 'c.name as category_name', 'a.thumb')
+            $query = $this->select('a.id', 'a.name', 'a.content', 'a.created', 'a.category_id', 'c.name as category_name', 'a.thumb', 'a.created_by', 'a.created')
                 ->leftJoin('category as c', 'a.category_id', '=', 'c.id')
                 ->where('a.status', '=', 'active')
                 ->where('a.type', 'feature')
                 ->orderBy('a.id', 'desc')
-                ->take(3);
+                ->take($count);
 
             $result = $query->get()->toArray();
         }
@@ -70,20 +74,19 @@ class ArticleModel extends AdminModel
 
         if ($options['task'] == 'news-list-items-latest') {
 
-            $query = $this->select('a.id', 'a.name', 'a.created', 'a.category_id', 'c.name as category_name', 'a.thumb')
+            $query = $this->select('a.id', 'a.name', 'a.created', 'a.category_id', 'c.name as category_name', 'a.thumb', 'a.created_by', 'a.created')
                 ->leftJoin('category as c', 'a.category_id', '=', 'c.id')
                 ->where('a.status', '=', 'active')
                 ->orderBy('id', 'desc')
-                ->take(4);;
+                ->take($count);;
             $result = $query->get()->toArray();
         }
 
         if ($options['task'] == 'news-list-items-in-category') {
-            $query = $this->select('id', 'name', 'content', 'thumb', 'created')
+            $query = $this->select('id', 'name', 'content', 'thumb', 'created', 'created_by')
                 ->where('status', '=', 'active')
-                ->where('category_id', '=', $params['category_id'])
-                ->take(4);
-            $result = $query->get()->toArray();
+                ->where('category_id', '=', $params['category_id']);
+            $result = $query->paginate($count);
         }
 
         if ($options['task'] == 'news-list-items-related-in-category') {
@@ -168,6 +171,7 @@ class ArticleModel extends AdminModel
             $params['created_by'] = "hailan";
             $params['created']    = date('Y-m-d');
             $params['thumb']      = $this->uploadThumb($params['thumb']);
+
             self::insert($this->prepareParams($params));
         }
 
@@ -195,5 +199,10 @@ class ArticleModel extends AdminModel
             $this->deleteThumb($item['thumb']);
             self::where('id', $params['id'])->delete();
         }
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(TagModel::class, 'article_tags', 'article_id', 'tag_id');
     }
 }

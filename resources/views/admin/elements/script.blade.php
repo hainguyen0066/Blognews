@@ -12,7 +12,8 @@
 <script src="{{ asset('admin/asset/iCheck/icheck.min.js') }}"></script>
 <script src="{{asset('admin/js/ckeditor/ckeditor.js')}}"></script>
 <!-- Custom Theme Scripts -->
-
+{{--Select2--}}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('admin/js/notify.min.js') }}"></script>
 <script src="{{ asset('admin/js/custom.min.js') }}"></script>
 <script src="{{ asset('admin/js/my-js.js') }}"></script>

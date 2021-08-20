@@ -56,7 +56,7 @@ class CategoryModel extends AdminModel
         if ($options['task'] == 'news-list-items-is-home') {
             $query = $this->select('id', 'name', 'display')
                 ->where('status', '=', 'active')
-                ->where('is_home', '=', 'yes');
+                ->where('is_home', '=', 1);
 
             $result = $query->get()->toArray();
         }
@@ -124,7 +124,7 @@ class CategoryModel extends AdminModel
         }
 
         if ($options['task'] == 'change-is-home') {
-            $isHome = ($params['currentIsHome'] == "yes") ? "no" : "yes";
+            $isHome = ($params['currentIsHome'] == "yes") ? 0 : 1;
             self::where('id', $params['id'])->update(['is_home' => $isHome]);
         }
 

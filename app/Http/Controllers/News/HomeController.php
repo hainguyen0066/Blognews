@@ -13,27 +13,28 @@ class HomeController extends Controller
     private $pathViewController = 'news.pages.home.';  // slider
     private $controllerName     = 'home';
     private $params             = [];
-    private $model;
+    protected $slider;
+    protected $article;
+    protected $category;
 
-    public function __construct()
+
+    public function __construct(SliderModel $sliderModel,ArticleModel $articleModel, CategoryModel $categoryModel)
     {
         view()->share('controllerName', $this->controllerName);
+        $this->slider   = $sliderModel;
+        $this->article  = $articleModel;
+        $this->category = $categoryModel;
     }
 
     public function index(Request $request)
     {
-        $sliderModel   = new SliderModel();
-        $categoryModel = new CategoryModel();
-        $articleModel  = new ArticleModel();
-
-        $itemsSlider   = $sliderModel->listItems(null, ['task'   => 'news-list-items']);
-        $itemsCategory = $categoryModel->listItems(null, ['task' => 'news-list-items-is-home']);
-        $itemsFeatured = $articleModel->listItems(null, ['task'  => 'news-list-items-featured']);
-        $itemsLatest   = $articleModel->listItems(null, ['task'  => 'news-list-items-latest']);
+        $itemsSlider   = $this->slider->listItems(null, ['task'   => 'news-list-items']);
+        $itemsCategory = $this->category->listItems(null, ['task' => 'news-list-items-is-home']);
+        $itemsFeatured = $this->article->listItems(null, ['task'  => 'news-list-items-featured'], 6);
+        $itemsLatest   = $this->article->listItems(null, ['task'  => 'news-list-items-latest'], 6);
 
         foreach ($itemsCategory as $key => $category)
-            $itemsCategory[$key]['articles'] = $articleModel->listItems(['category_id' => $category['id']], ['task' => 'news-list-items-in-category']);
-
+            $itemsCategory[$key]['articles'] = $this->article->listItems(['category_id' => $category['id']], ['task' => 'news-list-items-in-category']);
         $data = [
             'params'        => $this->params,
             'itemsSlider'   => $itemsSlider,
@@ -41,8 +42,8 @@ class HomeController extends Controller
             'itemsFeatured' => $itemsFeatured,
             'itemsLatest'   => $itemsLatest,
         ];
-        return view($this->pathViewController .  'index',$data);
+        return view('newss.pages.homepage', $data);
+//        return view('news.pages.home.index',$data);
     }
-
 
 }

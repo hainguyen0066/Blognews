@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use DB; 
+use DB;
 
 class AdminModel extends Model
 {
-     
-    public $timestamps = false;
+
+    public $timestamps = true;
     const CREATED_AT = 'created';
     const UPDATED_AT = 'modified';
 
@@ -19,7 +19,7 @@ class AdminModel extends Model
     protected $fieldSearchAccepted   = [
         'id',
         'name'
-    ]; 
+    ];
 
     protected $crudNotAccepted = [
         '_token',

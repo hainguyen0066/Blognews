@@ -1,10 +1,17 @@
 $(document).ready(function () {
+    $.ajaxSetup({
+        headers:{
+            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+        }
+    })
     let $btnSearch = $("button#btn-search");
     let $btnClearSearch = $("button#btn-clear-search");
 
     let $inputSearchField = $("input[name  = search_field]");
     let $inputSearchValue = $("input[name  = search_value]");
     let $selectChangeAttr = $("select[name = select_change_attr]");
+
+
 
     $("a.select-field").click(function (e) {
         e.preventDefault();
@@ -98,6 +105,7 @@ $(document).ready(function () {
             url: url,
             dataType: "json",
             success: function (response) {
+                console.log(response)
                 btn.removeClass(currentClass);
                 btn.addClass(response.isHomeObj.class);
                 btn.html(response.isHomeObj.name);
@@ -121,11 +129,20 @@ $(document).ready(function () {
             url: url,
             dataType: "json",
             success: function (response) {
-                ele.notify("Cập nhật thành công", {
-                    position: "top center",
-                    className: "success",
-                });
+               showNotify(ele,"Cập nhật thành công");
             },
         });
     });
 });
+
+function showNotify(element, text = '', position = 'top center', className = 'success') {
+    element.notify(text, {
+        positon: position,
+        className: className
+    })
+}
+
+$(".tags-selected").select2({
+    tags: true,
+    tokenSeparators: [',', ' ']
+})
