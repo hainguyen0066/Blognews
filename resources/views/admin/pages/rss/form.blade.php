@@ -8,6 +8,7 @@
 
     $statusValue      = ['default' => 'Select status', 'active' => config('zvn.template.status.active.name'), 'inactive' => config('zvn.template.status.inactive.name')];
     $sourceValues     = array_combine(array_keys(config('zvn.template.rss_source')), array_column(config('zvn.template.rss_source'), 'name'));
+    dd(array_column(config('zvn.template.rss_source'), 'name'));
 
     $inputHiddenID    = Form::hidden('id', @$item['id']);
 
@@ -49,7 +50,7 @@
                 @include('admin.templates.x_title', ['title' => 'Form'])
                 <div class="x_content">
                     {{ Form::open([
-                        'method'         => 'POST', 
+                        'method'         => 'POST',
                         'url'            => route("$controllerName/save"),
                         'accept-charset' => 'UTF-8',
                         'enctype'        => 'multipart/form-data',

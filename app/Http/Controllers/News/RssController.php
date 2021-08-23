@@ -12,8 +12,6 @@ class RssController extends Controller
 {
     private $pathViewController = 'news.pages.rss.';  // slider
     private $controllerName     = 'rss';
-    private $params             = [];
-    private $model;
 
     public function __construct()
     {

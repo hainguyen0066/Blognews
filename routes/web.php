@@ -159,6 +159,14 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'acp', 'middleware' => ['permi
     });
 });
 
+Route::group(['namespace' => 'News', 'prefix' => ''], function() {
+    Route::any('/', [
+        'uses'      => 'HomeController@index',
+        'as'        => 'index',
+        'namespace' => 'News'
+    ]);
+});
+
 // ======================================= FRONT =================================================//
 Route::group(['namespace' => 'News', 'prefix' => 'news'], function() {
     // ============================== HOMEPAGE ==============================
@@ -207,7 +215,7 @@ Route::group(['namespace' => 'News', 'prefix' => 'news'], function() {
         ]);
     });
     // ====================== RSS ========================
-    Route::group(['prefix' =>  ''], function(){
+    Route::group(['prefix' =>  'rss'], function(){
         Route::get('/tin-tuc-tong-hop', [
             'uses' => 'RssController@index',
             'as' => 'rss/index'

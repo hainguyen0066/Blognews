@@ -2,23 +2,21 @@
 
 namespace App\Helpers;
 
-
 class Feed
 {
-    public static function read($itemsRss)
+    public static function read($itemsRss, $count = 5)
     {
         $result = [];
         foreach ($itemsRss as $value) {
             if (Feed::checkSourceLink($value['source'], $value['link'])) {
                 switch ($value['source']) {
                     case 'vnexpress':
-                        $data = Feed::readVNExpress($value['link']);
+                        $result['vnexpress'] =array_slice(Feed::readVNExpress($value['link']), 0, $count, true);
                         break;
                     case 'tuoitre':
-                        $data = Feed::readTuoiTre($value['link']);
+                        $result['tuoitre'] =array_slice(Feed::readTuoiTre($value['link']), 0, $count, true);
                         break;
                 }
-                $result = array_merge_recursive($result, $data);
             }
         }
         return $result;
@@ -50,7 +48,9 @@ class Feed
                 $data[$key]['description'] = $tmp2[1] ?? $value['description'];
                 $data[$key]['thumb'] = $tmp1[1] ?? '';
             }
+
             return $data;
+
         } catch (\Throwable $th) {
             return [];
         }
@@ -119,7 +119,7 @@ class Feed
         // Set cURL options
         curl_setopt_array($curl, array(
             CURLOPT_URL => $request,            // set the request URL
-            CURLOPT_HTTPHEADER => $headers,     // set the headers 
+            CURLOPT_HTTPHEADER => $headers,     // set the headers
             CURLOPT_RETURNTRANSFER => 1         // ask for raw response instead of bool
         ));
 
